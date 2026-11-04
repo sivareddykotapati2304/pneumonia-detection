@@ -261,6 +261,65 @@ def preprocess_chest_xray(pil_image, model=None):
     input_batch = np.expand_dims(img_array, axis=0)
     return input_batch
 
+def validate_chest_xray(pil_image) -> tuple:
+    """
+    Validates whether an uploaded image possesses typical radiological characteristics
+    of a chest X-ray radiograph (monochromatic channels, thoracic dynamic range, contrast, aspect ratio).
+    Rejects clearly non-chest-X-ray images (color photos, graphics, document scans, solid colors)
+    before prediction. Returns (is_valid, reason).
+    """
+    try:
+        img = pil_image.convert("RGB")
+        width, height = img.size
+        
+        # 1. Dimensional / Aspect ratio checks
+        if width < 80 or height < 80:
+            return False, "Image resolution is too low (< 80px) to be a viable chest radiograph."
+            
+        aspect_ratio = width / height
+        if aspect_ratio < 0.35 or aspect_ratio > 2.8:
+            return False, f"Aspect ratio ({aspect_ratio:.2f}) is atypical for a standard thoracic radiograph."
+            
+        arr = np.array(img, dtype=np.float32)
+        
+        # 2. Monochromatic / Chromaticity check
+        # Real chest radiographs are grayscale. Color photos have significant variance between R, G, B channels.
+        diff_rg = np.abs(arr[:, :, 0] - arr[:, :, 1])
+        diff_gb = np.abs(arr[:, :, 1] - arr[:, :, 2])
+        diff_br = np.abs(arr[:, :, 2] - arr[:, :, 0])
+        mean_chromatic_diff = float(np.mean(diff_rg + diff_gb + diff_br) / 3.0)
+        
+        if mean_chromatic_diff > 16.0:
+            return False, f"Significant color detected (chromatic variation: {mean_chromatic_diff:.1f}). Chest radiographs are monochromatic."
+            
+        # 3. Contrast and Intensity Distribution
+        gray = np.mean(arr, axis=2)
+        std_dev = float(np.std(gray))
+        
+        # Solid colors or very flat graphics have near-zero std dev
+        if std_dev < 18.0:
+            return False, f"Image lacks contrast and anatomical density variation (std dev: {std_dev:.1f})."
+            
+        # Dynamic range (difference between 95th and 5th percentiles)
+        p5 = float(np.percentile(gray, 5))
+        p95 = float(np.percentile(gray, 95))
+        if (p95 - p5) < 45.0:
+            return False, f"Dynamic range is too narrow ({p95 - p5:.1f}) for a radiographic projection."
+            
+        # 4. Mostly white (e.g. document scan or empty canvas)
+        white_ratio = float(np.mean(gray > 245))
+        if white_ratio > 0.65:
+            return False, "Image appears to be a document or largely overexposed white canvas."
+            
+        # 5. Mostly black (e.g. blank dark screen)
+        dark_ratio = float(np.mean(gray < 15))
+        if dark_ratio > 0.85:
+            return False, "Image is predominantly underexposed or black."
+            
+        return True, "Valid chest radiograph properties confirmed."
+    except Exception as e:
+        return False, f"Image validation error: {str(e)}"
+
 # ==============================================================================
 # 3. SIDEBAR NAVIGATION & HEALTHCARE BRANDING
 # ==============================================================================
@@ -303,7 +362,7 @@ with st.sidebar:
     # Universal Disclaimer in Sidebar
     st.markdown("""
         <div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 0.75rem; font-size: 0.75rem; color: #92400E; line-height: 1.4;">
-            <b>Educational Prototype:</b> Not certified for diagnostic or clinical use. Consult a physician for medical diagnosis.
+            <b>Educational Prototype:</b> This application is an educational prototype, not a medical diagnosis. Consult a licensed physician for healthcare evaluations.
         </div>
     """, unsafe_allow_html=True)
 
@@ -602,6 +661,8 @@ elif "Upload X-ray" in nav_selection:
                 source_label = "Demo Simulation: Pulmonary Consolidation / Infiltrates"
         
         if image_to_process is not None:
+            is_valid_xray, validation_msg = validate_chest_xray(image_to_process)
+            
             st.markdown(f"""
                 <div class="med-card" style="padding: 1rem; text-align: center;">
                     <div style="font-size: 0.85rem; font-weight: 600; color: #0284C7; margin-bottom: 0.75rem;">
@@ -619,125 +680,140 @@ elif "Upload X-ray" in nav_selection:
                     <span><b>Target Preprocessing:</b> 224×224 RGB</span>
                 </div>
             """, unsafe_allow_html=True)
+            
+            if not is_valid_xray:
+                st.error("⚠️ Please upload a valid chest X-ray image")
+                st.caption(f"Validation Details: {validation_msg}")
+            else:
+                st.success("✅ Image verified: Monochromatic thoracic radiograph properties confirmed.")
 
     with col_right:
         st.markdown("### 📊 Diagnostic Analysis")
         
         if image_to_process is not None:
-            # Preprocess the image
-            input_tensor = preprocess_chest_xray(image_to_process, model=model)
-            
-            prediction_success = False
-            prob_pneumonia = 0.0
-            prob_normal = 0.0
-            predicted_class_id = 0
-            predicted_class_name = "NORMAL"
-            confidence = 0.0
-            
-            if model is not None:
-                try:
-                    with st.spinner("Analyzing radiograph features..."):
-                        raw_output = model.predict(input_tensor, verbose=0)
-                        prob_pneumonia = float(raw_output[0][0])
-                        prob_normal = 1.0 - prob_pneumonia
-                        
-                        # Requirement 7: NORMAL = 0, PNEUMONIA = 1
-                        if prob_pneumonia >= 0.5:
-                            predicted_class_id = 1
-                            predicted_class_name = CLASS_NAMES[1]
-                            confidence = prob_pneumonia * 100.0
-                        else:
-                            predicted_class_id = 0
-                            predicted_class_name = CLASS_NAMES[0]
-                            confidence = prob_normal * 100.0
-                            
-                        prediction_success = True
-                except Exception as pred_err:
-                    st.error(f"Prediction failed: {pred_err}")
-            else:
-                st.info("⚠️ Model weights are not loaded because TensorFlow/Keras is pending in this environment. Showing demonstration calculation based on image feature heuristic.")
-                # Fallback mock for UI visualization if dependencies are not yet installed
-                brightness = np.mean(np.array(image_to_process)) / 255.0
-                prob_pneumonia = float(min(max(brightness, 0.05), 0.95))
-                prob_normal = 1.0 - prob_pneumonia
-                predicted_class_id = 1 if prob_pneumonia >= 0.5 else 0
-                predicted_class_name = CLASS_NAMES[predicted_class_id]
-                confidence = (prob_pneumonia if predicted_class_id == 1 else prob_normal) * 100.0
-                prediction_success = True
-                
-            if prediction_success:
-                st.markdown("<div class='med-card'>", unsafe_allow_html=True)
-                
-                # Header Badge
-                if predicted_class_id == 1:
-                    st.markdown("""
-                        <div style="text-align: center; margin-bottom: 1.5rem;">
-                            <div class="badge-pneumonia">
-                                ⚠️ PNEUMONIA DETECTED (Class 1)
-                            </div>
+            if not is_valid_xray:
+                st.markdown("""
+                    <div class="med-card" style="border-left: 5px solid #EF4444; background-color: #FEF2F2; padding: 2.5rem 1.5rem; text-align: center;">
+                        <div style="font-size: 2.8rem; margin-bottom: 0.75rem;">🚫</div>
+                        <div style="font-size: 1.35rem; font-weight: 700; color: #991B1B; margin-bottom: 0.5rem;">
+                            Please upload a valid chest X-ray image
                         </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown("""
-                        <div style="text-align: center; margin-bottom: 1.5rem;">
-                            <div class="badge-normal">
-                                ✅ NORMAL / HEALTHY (Class 0)
-                            </div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                
-                # Confidence Score Metric
-                st.markdown(f"""
-                    <div style="text-align: center; margin-bottom: 1.5rem;">
-                        <span style="font-size: 2.5rem; font-weight: 800; color: #0F4C81;">{confidence:.2f}%</span>
-                        <div style="font-size: 0.85rem; color: #64748B; font-weight: 500; text-transform: uppercase;">
-                            Model Prediction Confidence
-                        </div>
+                        <p style="font-size: 0.9rem; color: #7F1D1D; line-height: 1.6; max-width: 440px; margin: 0 auto;">
+                            The uploaded image was rejected by our input verification filter. 
+                            Chest radiographs are monochromatic thoracic projections with distinct radiological density and dynamic range. 
+                            Color photographs, digital graphics, documents, or non-medical images cannot be processed by this model.
+                        </p>
                     </div>
                 """, unsafe_allow_html=True)
+            else:
+                # Preprocess the image
+                input_tensor = preprocess_chest_xray(image_to_process, model=model)
                 
-                # Probabilities Breakdown
-                st.markdown("#### Probability Distribution")
+                prediction_success = False
+                prob_pneumonia = 0.0
+                prob_normal = 0.0
+                predicted_class_id = 0
+                predicted_class_name = "NORMAL"
+                output_probability = 0.0
                 
-                p_norm_col, p_pneu_col = st.columns(2)
-                with p_norm_col:
+                if model is not None:
+                    try:
+                        with st.spinner("Analyzing radiograph features..."):
+                            raw_output = model.predict(input_tensor, verbose=0)
+                            prob_pneumonia = float(raw_output[0][0])
+                            prob_normal = 1.0 - prob_pneumonia
+                            
+                            # Requirement 6: NORMAL = 0, PNEUMONIA = 1
+                            if prob_pneumonia >= 0.5:
+                                predicted_class_id = 1
+                                predicted_class_name = CLASS_NAMES[1]
+                                output_probability = prob_pneumonia * 100.0
+                            else:
+                                predicted_class_id = 0
+                                predicted_class_name = CLASS_NAMES[0]
+                                output_probability = prob_normal * 100.0
+                                
+                            prediction_success = True
+                    except Exception as pred_err:
+                        st.error(f"Prediction failed: {pred_err}")
+                else:
+                    st.info("⚠️ Model weights are not loaded because TensorFlow/Keras is pending in this environment. Showing demonstration calculation based on image feature heuristic.")
+                    # Fallback mock for UI visualization if dependencies are not yet installed
+                    brightness = np.mean(np.array(image_to_process)) / 255.0
+                    prob_pneumonia = float(min(max(brightness, 0.05), 0.95))
+                    prob_normal = 1.0 - prob_pneumonia
+                    predicted_class_id = 1 if prob_pneumonia >= 0.5 else 0
+                    predicted_class_name = CLASS_NAMES[predicted_class_id]
+                    output_probability = (prob_pneumonia if predicted_class_id == 1 else prob_normal) * 100.0
+                    prediction_success = True
+                    
+                if prediction_success:
+                    st.markdown("<div class='med-card'>", unsafe_allow_html=True)
+                    
+                    # Header Badge
+                    if predicted_class_id == 1:
+                        st.markdown("""
+                            <div style="text-align: center; margin-bottom: 1.5rem;">
+                                <div class="badge-pneumonia">
+                                    ⚠️ PNEUMONIA DETECTED (Class 1)
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown("""
+                            <div style="text-align: center; margin-bottom: 1.5rem;">
+                                <div class="badge-normal">
+                                    ✅ NORMAL / HEALTHY (Class 0)
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    
+                    # Output Probability Metric (Requirement 3: Renamed to "Model Output Probability")
                     st.markdown(f"""
-                        <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                            <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">NORMAL (Class 0)</div>
-                            <div style="font-size: 1.25rem; font-weight: 700; color: #059669;">{prob_normal * 100:.2f}%</div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                with p_pneu_col:
-                    st.markdown(f"""
-                        <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                            <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">PNEUMONIA (Class 1)</div>
-                            <div style="font-size: 1.25rem; font-weight: 700; color: #DC2626;">{prob_pneumonia * 100:.2f}%</div>
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <span style="font-size: 2.5rem; font-weight: 800; color: #0F4C81;">{output_probability:.2f}%</span>
+                            <div style="font-size: 0.85rem; color: #64748B; font-weight: 500; text-transform: uppercase;">
+                                Model Output Probability
+                            </div>
                         </div>
                     """, unsafe_allow_html=True)
                     
-                st.write("")
-                # Visual Bar
-                st.progress(prob_pneumonia, text=f"Pneumonia Likelihood: {prob_pneumonia * 100:.1f}%")
-                
-                # Clinical Interpretation
-                st.markdown("---")
-                st.markdown("#### 🔍 Clinical Interpretation Guide")
-                if predicted_class_id == 1:
-                    st.markdown("""
-                        <div style="font-size: 0.9rem; color: #334155; line-height: 1.6;">
-                            • <b>Pattern Observation:</b> The network identified localized or diffuse radiometric opacification consistent with alveolar fluid, consolidation, or bronchopneumonia.<br>
-                            • <b>Recommended Action:</b> Perform full clinical correlation including auscultation, pulse oximetry, inflammatory markers (CRP/WBC), and formal radiology review.
+                    # Probabilities Breakdown
+                    st.markdown("#### Probability Distribution")
+                    
+                    p_norm_col, p_pneu_col = st.columns(2)
+                    with p_norm_col:
+                        st.markdown(f"""
+                            <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 0.75rem; text-align: center;">
+                                <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">NORMAL (Class 0)</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: #059669;">{prob_normal * 100:.2f}%</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with p_pneu_col:
+                        st.markdown(f"""
+                            <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 0.75rem; text-align: center;">
+                                <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">PNEUMONIA (Class 1)</div>
+                                <div style="font-size: 1.25rem; font-weight: 700; color: #DC2626;">{prob_pneumonia * 100:.2f}%</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+                    st.write("")
+                    # Visual Bar
+                    st.progress(prob_pneumonia, text=f"Pneumonia Output Likelihood: {prob_pneumonia * 100:.1f}%")
+                    
+                    # Requirement 4: Technical Output Details (Clinical claim statements removed completely)
+                    st.markdown("---")
+                    st.markdown("#### ℹ️ Model Output Details")
+                    st.markdown(f"""
+                        <div style="font-size: 0.88rem; color: #334155; line-height: 1.7; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1rem;">
+                            • <b>Predicted Classification:</b> {predicted_class_name} (Class {predicted_class_id})<br>
+                            • <b>Model Output Probability:</b> {output_probability:.2f}%<br>
+                            • <b>Raw Sigmoid Score:</b> {prob_pneumonia:.4f} (Decision threshold: &ge; 0.50 &rarr; PNEUMONIA)<br>
+                            • <b>Notice:</b> This output reflects statistical pattern classification from a Convolutional Neural Network. It does not provide medical findings, pathology confirmation, or clinical diagnosis.
                         </div>
                     """, unsafe_allow_html=True)
-                else:
-                    st.markdown("""
-                        <div style="font-size: 0.9rem; color: #334155; line-height: 1.6;">
-                            • <b>Pattern Observation:</b> Lung zones display preserved radiolucency without notable focal consolidation or pleural effusion.<br>
-                            • <b>Recommended Action:</b> If clinical suspicion remains high despite a normal radiograph, consider clinical monitoring or repeat imaging as indicated by symptom progression.
-                        </div>
-                    """, unsafe_allow_html=True)
-                
-                st.markdown("</div>", unsafe_allow_html=True)
+                    
+                    st.markdown("</div>", unsafe_allow_html=True)
         else:
             st.markdown("""
                 <div class="med-card" style="text-align: center; padding: 3rem 1.5rem; color: #94A3B8;">
@@ -751,14 +827,15 @@ elif "Upload X-ray" in nav_selection:
                 </div>
             """, unsafe_allow_html=True)
             
-    # Universal Medical Disclaimer (Prominent in analysis section)
+    # Requirement 7: Educational Prototype Disclaimer (Prominent in analysis section)
     st.markdown("""
         <div class="disclaimer-box">
-            <div class="disclaimer-title">⚠️ Mandatory Clinical Disclaimer</div>
+            <div class="disclaimer-title">⚠️ Mandatory Notice: Educational Prototype Only</div>
             <p class="disclaimer-text">
-                <b>This AI tool is an educational research prototype and does not provide a definitive medical diagnosis.</b> 
-                Automated predictions may include false positives or false negatives due to image artifacts, patient positioning, 
-                or non-pneumonic opacities (e.g., atelectasis, pulmonary edema). Always seek diagnosis and management from licensed medical specialists.
+                <b>This application is an educational prototype and not a medical diagnosis.</b> 
+                This automated classification tool is developed solely for academic research and educational demonstration. 
+                It must not be used for clinical decision-making, patient triage, or healthcare management. 
+                All chest radiographs must be formally evaluated by certified medical specialists and radiologists.
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -1058,7 +1135,7 @@ st.markdown("""
     <div class="healthcare-footer">
         <b>PulmoScan AI</b> • Automated Identification of Pneumonia Using CNN-Based Chest X-Ray Image Classification<br>
         <span style="font-size: 0.78rem; color: #94A3B8;">
-            Educational Prototype Only • Not For Diagnostic Use • Designed with Streamlit &amp; Keras
+            Educational Prototype Only • Not a Medical Diagnosis • Designed with Streamlit &amp; Keras
         </span>
     </div>
 """, unsafe_allow_html=True)

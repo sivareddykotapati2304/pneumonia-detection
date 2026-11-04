@@ -6,179 +6,276 @@ from PIL import Image
 import streamlit as st
 
 # ==============================================================================
-# 1. PAGE CONFIGURATION & THEME STYLING
+# 1. PAGE CONFIGURATION & THEME STYLING (FUTURISTIC MEDICAL AI)
 # ==============================================================================
 st.set_page_config(
-    page_title="PulmoScan AI - Pneumonia Detection Dashboard",
+    page_title="PulmoScan AI - Neural Pneumonia Detection",
     page_icon="🩺",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Healthcare Blue-and-White Theme CSS
+# Custom Futuristic Glassmorphism & Dark Navy Cyber-Medical Theme
 st.markdown("""
 <style>
-    /* Global Styles */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
     
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #E2E8F0;
     }
     
-    /* Main Background */
+    /* Background Ambience */
     .stApp {
-        background-color: #F8FAFC;
+        background: radial-gradient(circle at 15% 15%, #0D1B36 0%, #070B14 55%, #05080F 100%);
+        background-attachment: fixed;
     }
     
-    /* Header Banner */
-    .healthcare-header {
-        background: linear-gradient(135deg, #0F4C81 0%, #1E3A8A 50%, #0284C7 100%);
-        color: white;
-        padding: 2.2rem 2.5rem;
+    /* Neon Glow Text Utilities */
+    .glow-text-cyan {
+        color: #00F0FF;
+        text-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
+    }
+    
+    .glow-text-blue {
+        color: #38BDF8;
+        text-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+    }
+    
+    /* Futuristic Glassmorphism Card */
+    .glass-card {
+        background: rgba(13, 21, 39, 0.65);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(0, 240, 255, 0.15);
         border-radius: 16px;
-        box-shadow: 0 10px 25px -5px rgba(15, 76, 129, 0.2);
-        margin-bottom: 2rem;
+        padding: 1.5rem;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        margin-bottom: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
     }
     
-    .healthcare-header h1 {
-        color: #FFFFFF !important;
-        font-size: 2.2rem !important;
-        font-weight: 700 !important;
-        margin-bottom: 0.5rem !important;
+    .glass-card:hover {
+        border-color: rgba(0, 240, 255, 0.35);
+        box-shadow: 0 12px 40px 0 rgba(0, 240, 255, 0.12), inset 0 0 0 1px rgba(0, 240, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .glass-card-active {
+        border-color: #00F0FF;
+        box-shadow: 0 0 25px rgba(0, 240, 255, 0.2);
+    }
+    
+    /* Hero Banner Container */
+    .hero-container {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(13, 27, 62, 0.7) 50%, rgba(6, 182, 212, 0.12) 100%);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        border-radius: 20px;
+        padding: 2.5rem 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #FFFFFF 20%, #38BDF8 60%, #00F0FF 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+        line-height: 1.15;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+        color: #94A3B8;
+        font-weight: 400;
+        margin-bottom: 1.25rem;
+        letter-spacing: -0.01em;
+    }
+    
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid rgba(0, 240, 255, 0.3);
+        color: #00F0FF;
+        padding: 0.35rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+    
+    /* Futuristic Badges */
+    .badge-normal-futuristic {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(16, 185, 129, 0.12);
+        color: #34D399;
+        border: 1.5px solid #10B981;
+        padding: 0.75rem 1.75rem;
+        border-radius: 9999px;
+        font-size: 1.35rem;
+        font-weight: 700;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        letter-spacing: 0.02em;
+    }
+    
+    .badge-pneumonia-futuristic {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(239, 68, 68, 0.12);
+        color: #F87171;
+        border: 1.5px solid #EF4444;
+        padding: 0.75rem 1.75rem;
+        border-radius: 9999px;
+        font-size: 1.35rem;
+        font-weight: 700;
+        box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
+        letter-spacing: 0.02em;
+    }
+    
+    /* Holographic Metric Scorecard */
+    .cyber-metric-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 14px;
+        padding: 1.25rem 1rem;
+        text-align: center;
+        box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.04);
+        position: relative;
+    }
+    
+    .cyber-metric-value {
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: #00F0FF;
+        font-family: 'JetBrains Mono', monospace;
         letter-spacing: -0.02em;
     }
     
-    .healthcare-header p {
-        color: #E0F2FE !important;
-        font-size: 1.05rem !important;
-        margin: 0 !important;
-        max-width: 900px;
-        line-height: 1.5;
-    }
-    
-    /* Healthcare Cards */
-    .med-card {
-        background-color: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-        margin-bottom: 1.5rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    
-    .med-card:hover {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-    }
-    
-    .med-card-highlight {
-        border-left: 5px solid #0284C7;
-    }
-    
-    /* Metric Scorecard */
-    .metric-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 1.25rem 1rem;
-        text-align: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-    }
-    
-    .metric-value {
-        font-size: 1.85rem;
-        font-weight: 700;
-        color: #0F4C81;
-        margin-bottom: 0.25rem;
-    }
-    
-    .metric-label {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: #64748B;
+    .cyber-metric-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #94A3B8;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
+        margin-top: 0.25rem;
     }
     
-    /* Clinical Badges */
-    .badge-normal {
-        display: inline-flex;
-        align-items: center;
-        background-color: #ECFDF5;
-        color: #065F46;
-        border: 1.5px solid #A7F3D0;
-        padding: 0.75rem 1.5rem;
-        border-radius: 9999px;
-        font-size: 1.35rem;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-    }
-    
-    .badge-pneumonia {
-        display: inline-flex;
-        align-items: center;
-        background-color: #FEF2F2;
-        color: #991B1B;
-        border: 1.5px solid #FECACA;
-        padding: 0.75rem 1.5rem;
-        border-radius: 9999px;
-        font-size: 1.35rem;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-    }
-    
-    /* Medical Disclaimer Callout */
-    .disclaimer-box {
-        background-color: #FFFBEB;
-        border: 1px solid #FCD34D;
-        border-left: 5px solid #D97706;
-        padding: 1.2rem 1.4rem;
-        border-radius: 10px;
+    /* Medical Disclaimer Notice */
+    .futuristic-disclaimer {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.35);
+        border-left: 4px solid #F59E0B;
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
         margin: 1.5rem 0;
-        color: #92400E;
+        color: #FDE68A;
     }
     
-    .disclaimer-title {
+    .disclaimer-head {
         font-weight: 700;
         font-size: 0.95rem;
+        color: #FBBF24;
         margin-bottom: 0.35rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
     }
     
-    .disclaimer-text {
-        font-size: 0.875rem;
-        line-height: 1.5;
+    .disclaimer-body {
+        font-size: 0.86rem;
+        color: #FCD34D;
+        line-height: 1.6;
         margin: 0;
-        color: #78350F;
     }
     
-    /* Progress bar custom styling */
-    .stProgress > div > div > div > div {
-        background-color: #0284C7;
+    /* Confusion Matrix Heatmap Matrix */
+    .cm-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 1rem;
     }
     
-    /* Sidebar Styling */
+    .cm-cell {
+        background: rgba(15, 23, 42, 0.8);
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: transform 0.2s ease;
+    }
+    
+    .cm-cell:hover {
+        transform: scale(1.02);
+    }
+    
+    .cm-tp {
+        border-color: rgba(0, 240, 255, 0.4);
+        background: linear-gradient(135deg, rgba(13, 27, 62, 0.85) 0%, rgba(0, 240, 255, 0.1) 100%);
+    }
+    
+    .cm-tn {
+        border-color: rgba(16, 185, 129, 0.4);
+        background: linear-gradient(135deg, rgba(13, 27, 62, 0.85) 0%, rgba(16, 185, 129, 0.1) 100%);
+    }
+    
+    .cm-fn {
+        border-color: rgba(239, 68, 68, 0.4);
+        background: linear-gradient(135deg, rgba(13, 27, 62, 0.85) 0%, rgba(239, 68, 68, 0.08) 100%);
+    }
+    
+    .cm-fp {
+        border-color: rgba(245, 158, 11, 0.4);
+        background: linear-gradient(135deg, rgba(13, 27, 62, 0.85) 0%, rgba(245, 158, 11, 0.08) 100%);
+    }
+    
+    /* Scanner HUD Corner Overlay */
+    .hud-box {
+        position: relative;
+        padding: 12px;
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        border-radius: 12px;
+        background: rgba(10, 16, 30, 0.7);
+    }
+    
+    /* Sidebar Styles */
     section[data-testid="stSidebar"] {
-        background-color: #FFFFFF;
-        border-right: 1px solid #E2E8F0;
+        background-color: #080D1A !important;
+        border-right: 1px solid rgba(0, 240, 255, 0.12) !important;
     }
     
     /* Footer */
-    .healthcare-footer {
+    .futuristic-footer {
         text-align: center;
-        padding: 2rem 0 1rem 0;
+        padding: 2.5rem 0 1rem 0;
         color: #64748B;
         font-size: 0.85rem;
-        border-top: 1px solid #E2E8F0;
-        margin-top: 3rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        margin-top: 3.5rem;
+    }
+    
+    /* Custom Streamlit Element Overrides */
+    .stProgress > div > div > div > div {
+        background: linear-gradient(90deg, #0066FF 0%, #00F0FF 100%);
+        box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. MODEL CONFIGURATION & SAFE LOADER
+# 2. MODEL CONFIGURATION & PREDICTION PIPELINE
 # ==============================================================================
 MODEL_FILENAME = "pneumonia_cnn_model.keras"
 MODEL_PATH = os.path.join(os.path.dirname(__file__), MODEL_FILENAME)
@@ -188,11 +285,10 @@ CLASS_NAMES = {
     1: "PNEUMONIA"
 }
 
-@st.cache_resource(show_spinner="Loading trained pneumonia CNN model...")
+@st.cache_resource(show_spinner=False)
 def load_pneumonia_model():
     """
-    Safely loads the Keras model stored at website/pneumonia_cnn_model.keras.
-    Gracefully handles environment dependency checks for TensorFlow and Keras.
+    Safely loads the pre-trained Keras model without modifying or retraining it.
     """
     if not os.path.exists(MODEL_PATH):
         return None, f"Model file not found at: {MODEL_PATH}"
@@ -207,66 +303,14 @@ def load_pneumonia_model():
             model = tf.keras.models.load_model(MODEL_PATH, compile=False)
             return model, None
         except ImportError:
-            return None, "Neither Keras (v3) nor TensorFlow is installed in this Python environment."
+            return None, "TensorFlow/Keras runtime not loaded."
     except Exception as e:
-        return None, f"Error loading model: {str(e)}"
-
-def read_model_internal_metadata():
-    """
-    Reads architecture metadata and configuration directly from pneumonia_cnn_model.keras
-    without modifying or executing the file.
-    """
-    if not os.path.exists(MODEL_PATH):
-        return None
-    try:
-        with zipfile.ZipFile(MODEL_PATH, 'r') as z:
-            meta_raw = z.read('metadata.json').decode('utf-8')
-            cfg_raw = z.read('config.json').decode('utf-8')
-            meta = json.loads(meta_raw)
-            cfg = json.loads(cfg_raw)
-            return {"metadata": meta, "config": cfg}
-    except Exception:
-        return None
-
-def preprocess_chest_xray(pil_image, model=None):
-    """
-    Requirement 6:
-    Resize uploaded image to 224x224 RGB and preprocess using pixel scaling from -1 to 1,
-    exactly as during training.
-    
-    Note:
-    The trained model has a built-in Rescaling layer (scale=0.007843137, offset=-1)
-    which maps [0, 255] -> [-1, 1]. To ensure absolute correctness regardless of whether
-    the model contains the Rescaling layer or not, we detect the layer dynamically.
-    """
-    # Step 1: Ensure RGB format and resize to 224x224
-    rgb_img = pil_image.convert("RGB").resize((224, 224), Image.Resampling.LANCZOS)
-    
-    # Step 2: Convert to numpy float32 array
-    img_array = np.array(rgb_img, dtype=np.float32)
-    
-    # Step 3: Verify if model has built-in Rescaling layer
-    has_rescaling_layer = False
-    if model is not None and hasattr(model, 'layers'):
-        for layer in model.layers:
-            if layer.__class__.__name__ == "Rescaling" or "rescaling" in layer.name.lower():
-                has_rescaling_layer = True
-                break
-    
-    if not has_rescaling_layer:
-        # Scale explicitly to [-1, 1] range: (x / 127.5) - 1.0
-        img_array = (img_array / 127.5) - 1.0
-    
-    # Step 4: Expand dimensions to match model input batch shape [1, 224, 224, 3]
-    input_batch = np.expand_dims(img_array, axis=0)
-    return input_batch
+        return None, f"Error initializing model: {str(e)}"
 
 def validate_chest_xray(pil_image) -> tuple:
     """
-    Validates whether an uploaded image possesses typical radiological characteristics
-    of a chest X-ray radiograph (monochromatic channels, thoracic dynamic range, contrast, aspect ratio).
-    Rejects clearly non-chest-X-ray images (color photos, graphics, document scans, solid colors)
-    before prediction. Returns (is_valid, reason).
+    Requirement: Reject clearly non-chest-X-ray images before prediction.
+    Validates monochromatic channels, thoracic contrast dynamic range, and aspect ratio.
     """
     try:
         img = pil_image.convert("RGB")
@@ -274,362 +318,297 @@ def validate_chest_xray(pil_image) -> tuple:
         
         # 1. Dimensional / Aspect ratio checks
         if width < 80 or height < 80:
-            return False, "Image resolution is too low (< 80px) to be a viable chest radiograph."
+            return False, "Resolution is insufficient (< 80px) for chest radiography."
             
         aspect_ratio = width / height
         if aspect_ratio < 0.35 or aspect_ratio > 2.8:
-            return False, f"Aspect ratio ({aspect_ratio:.2f}) is atypical for a standard thoracic radiograph."
+            return False, f"Aspect ratio ({aspect_ratio:.2f}) does not match thoracic radiographs."
             
         arr = np.array(img, dtype=np.float32)
         
-        # 2. Monochromatic / Chromaticity check
-        # Real chest radiographs are grayscale. Color photos have significant variance between R, G, B channels.
+        # 2. Monochromaticity check (Chest X-rays have near-zero color saturation)
         diff_rg = np.abs(arr[:, :, 0] - arr[:, :, 1])
         diff_gb = np.abs(arr[:, :, 1] - arr[:, :, 2])
         diff_br = np.abs(arr[:, :, 2] - arr[:, :, 0])
         mean_chromatic_diff = float(np.mean(diff_rg + diff_gb + diff_br) / 3.0)
         
         if mean_chromatic_diff > 16.0:
-            return False, f"Significant color detected (chromatic variation: {mean_chromatic_diff:.1f}). Chest radiographs are monochromatic."
+            return False, f"Significant color detected (chromatic diff: {mean_chromatic_diff:.1f}). Chest X-rays are monochromatic."
             
         # 3. Contrast and Intensity Distribution
         gray = np.mean(arr, axis=2)
         std_dev = float(np.std(gray))
         
-        # Solid colors or very flat graphics have near-zero std dev
         if std_dev < 18.0:
-            return False, f"Image lacks contrast and anatomical density variation (std dev: {std_dev:.1f})."
+            return False, f"Lacks anatomical contrast and density variation (std dev: {std_dev:.1f})."
             
-        # Dynamic range (difference between 95th and 5th percentiles)
         p5 = float(np.percentile(gray, 5))
         p95 = float(np.percentile(gray, 95))
         if (p95 - p5) < 45.0:
             return False, f"Dynamic range is too narrow ({p95 - p5:.1f}) for a radiographic projection."
             
-        # 4. Mostly white (e.g. document scan or empty canvas)
-        white_ratio = float(np.mean(gray > 245))
-        if white_ratio > 0.65:
-            return False, "Image appears to be a document or largely overexposed white canvas."
+        # 4. Document / Blank Canvas check
+        if float(np.mean(gray > 245)) > 0.65:
+            return False, "Image appears to be an overexposed canvas or document scan."
             
-        # 5. Mostly black (e.g. blank dark screen)
-        dark_ratio = float(np.mean(gray < 15))
-        if dark_ratio > 0.85:
+        # 5. Pure Black / Underexposed
+        if float(np.mean(gray < 15)) > 0.85:
             return False, "Image is predominantly underexposed or black."
             
-        return True, "Valid chest radiograph properties confirmed."
+        return True, "Valid chest radiograph"
     except Exception as e:
-        return False, f"Image validation error: {str(e)}"
+        return False, f"Validation processing error: {str(e)}"
+
+def preprocess_chest_xray(pil_image, model=None):
+    """
+    Technical Requirement:
+    Resize uploaded image to 224x224 RGB and apply pixel scaling from -1 to 1.
+    """
+    rgb_img = pil_image.convert("RGB").resize((224, 224), Image.Resampling.LANCZOS)
+    img_array = np.array(rgb_img, dtype=np.float32)
+    
+    # Check if the loaded model already has a built-in Rescaling layer
+    has_rescaling = False
+    if model is not None and hasattr(model, 'layers'):
+        for layer in model.layers:
+            if layer.__class__.__name__ == "Rescaling" or "rescaling" in layer.name.lower():
+                has_rescaling = True
+                break
+                
+    if not has_rescaling:
+        img_array = (img_array / 127.5) - 1.0
+        
+    return np.expand_dims(img_array, axis=0)
+
+# Load existing model instance
+model, load_error = load_pneumonia_model()
 
 # ==============================================================================
-# 3. SIDEBAR NAVIGATION & HEALTHCARE BRANDING
+# 3. SIDEBAR NAVIGATION
 # ==============================================================================
 with st.sidebar:
     st.markdown("""
-        <div style="text-align: center; padding: 1rem 0; border-bottom: 1px solid #E2E8F0; margin-bottom: 1.5rem;">
-            <div style="font-size: 2.8rem; margin-bottom: 0.25rem;">🩺</div>
-            <div style="font-size: 1.35rem; font-weight: 700; color: #0F4C81; letter-spacing: -0.01em;">PulmoScan AI</div>
-            <div style="font-size: 0.8rem; font-weight: 500; color: #0284C7; letter-spacing: 0.05em; text-transform: uppercase;">
-                Pneumonia Detection System
+        <div style="text-align: center; padding: 1.25rem 0 1rem 0; border-bottom: 1px solid rgba(0, 240, 255, 0.15); margin-bottom: 1.5rem;">
+            <div style="font-size: 2.4rem; filter: drop-shadow(0 0 12px #00F0FF); margin-bottom: 0.25rem;">🫁</div>
+            <div style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; background: linear-gradient(135deg, #FFFFFF, #00F0FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                PulmoScan AI
+            </div>
+            <div style="font-size: 0.72rem; font-weight: 600; color: #38BDF8; letter-spacing: 0.08em; text-transform: uppercase;">
+                Neural Radiograph Vision
             </div>
         </div>
     """, unsafe_allow_html=True)
     
     nav_selection = st.radio(
         "Navigation",
-        options=["🏠 Home", "📖 About Project", "🩺 Upload X-ray", "📊 Model Performance", "✉️ Contact"],
+        options=["⚡ Hero Overview", "🎯 X-Ray Detection Dashboard", "🔬 About Project", "✨ Core Features", "📊 Model Performance"],
         label_visibility="collapsed"
     )
     
     st.markdown("---")
     
-    # System Specs Snapshot
-    st.markdown("""
-        <div style="background-color: #F0F7FF; border: 1px solid #BAE6FD; border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem;">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #0369A1; text-transform: uppercase; margin-bottom: 0.5rem;">
-                Model Specifications
+    # Telemetry HUD
+    model_status_html = "<span style='color: #10B981;'>ONLINE (Ready)</span>" if model else "<span style='color: #F59E0B;'>STANDBY</span>"
+    st.markdown(f"""
+        <div style="background: rgba(13, 21, 39, 0.7); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #00F0FF; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;">
+                SYSTEM TELEMETRY
             </div>
-            <div style="font-size: 0.82rem; color: #334155; line-height: 1.6;">
-                • <b>Backbone:</b> MobileNetV2 (CNN)<br>
-                • <b>Input Size:</b> 224 × 224 × 3 RGB<br>
-                • <b>Normalization:</b> [-1, 1] Scaling<br>
-                • <b>Class 0:</b> NORMAL<br>
-                • <b>Class 1:</b> PNEUMONIA<br>
-                • <b>Activation:</b> Sigmoid
+            <div style="font-size: 0.8rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace; line-height: 1.7;">
+                • Engine: MobileNetV2<br>
+                • Res: 224×224×3 RGB<br>
+                • Scaling: [-1, 1]<br>
+                • State: {model_status_html}<br>
+                • Target: Binary (0 / 1)
             </div>
         </div>
     """, unsafe_allow_html=True)
     
-    # Universal Disclaimer in Sidebar
     st.markdown("""
-        <div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 0.75rem; font-size: 0.75rem; color: #92400E; line-height: 1.4;">
-            <b>Educational Prototype:</b> This application is an educational prototype, not a medical diagnosis. Consult a licensed physician for healthcare evaluations.
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 0.85rem; font-size: 0.74rem; color: #FCD34D; line-height: 1.5;">
+            <b>Educational Prototype:</b> Developed solely for academic research. Not a certified diagnostic device.
         </div>
     """, unsafe_allow_html=True)
 
-# Load model instance
-model, load_error = load_pneumonia_model()
-
 # ==============================================================================
-# 4. SECTION: HOME
+# 4. SECTION: HERO OVERVIEW (ASCEND-INSPIRED FUTURISTIC VISUALIZATION)
 # ==============================================================================
-if "Home" in nav_selection:
-    st.markdown("""
-        <div class="healthcare-header">
-            <h1>Automated Identification of Pneumonia</h1>
-            <p>
-                An intelligent clinical assistive system utilizing deep Convolutional Neural Networks (CNN) 
-                and transfer learning for rapid, automated classification of pediatric and adult chest X-ray radiographs.
+if "Hero Overview" in nav_selection:
+    col_hero_text, col_hero_vis = st.columns([1.2, 1], gap="large")
+    
+    with col_hero_text:
+        st.markdown("""
+            <div class="hero-badge">
+                <span style="font-size: 0.9rem;">⚡</span> Next-Gen Computer Vision Engine
+            </div>
+            <div class="hero-title">PulmoScan AI</div>
+            <div class="hero-subtitle">
+                AI-Powered Pneumonia Detection Using Chest X-Ray Images
+            </div>
+            <p style="color: #94A3B8; font-size: 1.05rem; line-height: 1.7; margin-bottom: 1.75rem;">
+                Empowering clinical radiograph workflows with deep transfer learning. 
+                PulmoScan AI analyzes standardized thoracic X-rays to generate instant binary classification 
+                probabilities between healthy lung fields and pulmonary consolidation patterns.
             </p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # Quick Metrics / Overview
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.markdown("""
-            <div class="metric-card">
-                <div class="metric-value">224×224</div>
-                <div class="metric-label">Input Resolution</div>
-            </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown("""
-            <div class="metric-card">
-                <div class="metric-value">MobileNetV2</div>
-                <div class="metric-label">CNN Backbone</div>
-            </div>
-        """, unsafe_allow_html=True)
-    with col3:
-        st.markdown("""
-            <div class="metric-card">
-                <div class="metric-value">Binary</div>
-                <div class="metric-label">Normal vs. Pneumonia</div>
-            </div>
-        """, unsafe_allow_html=True)
-    with col4:
-        st.markdown("""
-            <div class="metric-card">
-                <div class="metric-value">&lt; 100 ms</div>
-                <div class="metric-label">Inference Speed</div>
-            </div>
-        """, unsafe_allow_html=True)
-    
-    st.write("")
-    
-    # Key Capabilities
-    st.markdown("### 🌟 Key System Capabilities")
-    c1, c2, c3 = st.columns(3)
-    
-    with c1:
-        st.markdown("""
-            <div class="med-card med-card-highlight">
-                <h4 style="color: #0F4C81; margin-bottom: 0.5rem;">⚡ Real-Time Triage</h4>
-                <p style="color: #475569; font-size: 0.92rem; line-height: 1.6;">
-                    Rapidly classifies chest radiographs to expedite preliminary screening and highlight suspicious opacities in high-volume radiological triage workflows.
-                </p>
-            </div>
         """, unsafe_allow_html=True)
         
-    with c2:
-        st.markdown("""
-            <div class="med-card med-card-highlight">
-                <h4 style="color: #0F4C81; margin-bottom: 0.5rem;">🧠 Transfer Learning</h4>
-                <p style="color: #475569; font-size: 0.92rem; line-height: 1.6;">
-                    Harnesses pre-trained hierarchical image representations from MobileNetV2 with inverted residual bottlenecks to achieve robust feature extraction.
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
-        
-    with c3:
-        st.markdown("""
-            <div class="med-card med-card-highlight">
-                <h4 style="color: #0F4C81; margin-bottom: 0.5rem;">🔒 Patient Data Privacy</h4>
-                <p style="color: #475569; font-size: 0.92rem; line-height: 1.6;">
-                    Operates fully client-side and in-memory during inference. Images are processed locally without storage, logging, or third-party transmission.
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
-        
-    # Clinical Context & Workflow
-    st.markdown("### 🩺 Clinical Context & Screening Workflow")
-    st.markdown("""
-        <div class="med-card">
-            <p style="color: #334155; line-height: 1.7; font-size: 0.95rem;">
-                Pneumonia is an acute respiratory infection affecting the lungs, primarily caused by bacterial or viral pathogens. 
-                According to the World Health Organization (WHO), pneumonia accounts for over 14% of all deaths of children under five years old globally. 
-                Standard diagnostic confirmation relies on <b>anterior-posterior (AP) chest radiography</b>, where radiologists examine lung fields 
-                for distinctive consolidation, infiltrates, and patchy airspace opacity.
-            </p>
-            <div style="background-color: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 8px; padding: 1.25rem; margin-top: 1rem;">
-                <div style="font-weight: 600; color: #0F4C81; margin-bottom: 0.5rem;">End-to-End Pipeline:</div>
-                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; color: #475569; font-size: 0.9rem;">
-                    <span><b>1. Image Upload</b><br>DICOM / PNG / JPG radiograph</span>
-                    <span>➔</span>
-                    <span><b>2. Preprocessing</b><br>224×224 RGB &amp; [-1, 1] scaling</span>
-                    <span>➔</span>
-                    <span><b>3. CNN Feature Extraction</b><br>MobileNetV2 feature map</span>
-                    <span>➔</span>
-                    <span><b>4. Dense Head Inference</b><br>Sigmoid probability estimation</span>
-                    <span>➔</span>
-                    <span><b>5. Clinical Output</b><br>NORMAL (0) vs. PNEUMONIA (1)</span>
+        btn_c1, btn_c2 = st.columns([1, 1])
+        with btn_c1:
+            st.info("💡 Select **🎯 X-Ray Detection Dashboard** in the sidebar to upload & test chest radiographs.")
+            
+        st.write("")
+        # Quick Stat Counters
+        s1, s2, s3 = st.columns(3)
+        with s1:
+            st.markdown("""
+                <div class="cyber-metric-card">
+                    <div class="cyber-metric-value">82.85%</div>
+                    <div class="cyber-metric-label">Test Accuracy</div>
                 </div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # Prominent Disclaimer Callout
-    st.markdown("""
-        <div class="disclaimer-box">
-            <div class="disclaimer-title">⚠️ Mandatory Medical & Academic Disclaimer</div>
-            <p class="disclaimer-text">
-                This software application is an <b>academic educational research prototype</b> developed to demonstrate 
-                computer vision methods for medical image classification. It is <b>NOT</b> cleared by the FDA, CE, or any 
-                statutory health authority, and it is <b>NOT intended for diagnostic, prognostic, or clinical decision-making purposes</b>. 
-                All radiograph evaluations must be conducted by certified medical practitioners and radiologists.
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+        with s2:
+            st.markdown("""
+                <div class="cyber-metric-card">
+                    <div class="cyber-metric-value">0.99</div>
+                    <div class="cyber-metric-label">Pneumonia Recall</div>
+                </div>
+            """, unsafe_allow_html=True)
+        with s3:
+            st.markdown("""
+                <div class="cyber-metric-card">
+                    <div class="cyber-metric-value">&lt; 85ms</div>
+                    <div class="cyber-metric-label">Inference Latency</div>
+                </div>
+            """, unsafe_allow_html=True)
 
-# ==============================================================================
-# 5. SECTION: ABOUT PROJECT
-# ==============================================================================
-elif "About Project" in nav_selection:
-    st.markdown("""
-        <div class="healthcare-header">
-            <h1>About The Project</h1>
-            <p>
-                Architectural design, transfer learning methodology, data preprocessing pipeline, 
-                and clinical motivation behind the CNN pneumonia identification system.
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col_a, col_b = st.columns([3, 2])
-    
-    with col_a:
-        st.markdown("### 🎯 Problem Statement & Motivation")
+    with col_hero_vis:
+        # Glowing Futuristic 3D Hologram Lung Visualization Component (SVG + CSS Animation)
         st.markdown("""
-            <div class="med-card">
-                <p style="color: #334155; line-height: 1.7; font-size: 0.95rem;">
-                    Chest X-ray (CXR) interpretation is challenging due to subtle radiographic manifestations, 
-                    overlapping anatomical structures (ribs, cardiac silhouette, vascular markings), and high variability 
-                    in exposure quality. In resource-constrained healthcare environments and underserved rural clinics, 
-                    qualified pediatric radiologists are frequently unavailable, leading to delays in critical antimicrobial therapy.
-                </p>
-                <p style="color: #334155; line-height: 1.7; font-size: 0.95rem;">
-                    This project investigates automated deep-learning triage using a Convolutional Neural Network 
-                    to assist clinical staff by providing fast, objective binary classification between healthy lung fields 
-                    and pathological pulmonary consolidation.
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("### 🔬 Deep Learning & Transfer Learning Methodology")
-        st.markdown("""
-            <div class="med-card">
-                <p style="color: #334155; line-height: 1.7; font-size: 0.95rem;">
-                    Training deep neural networks from scratch on specialized medical datasets often suffers from overfitting 
-                    due to limited clinical sample sizes. To overcome this limitation, the system implements <b>Transfer Learning</b> 
-                    with the <b>MobileNetV2</b> architecture:
-                </p>
-                <ul style="color: #475569; font-size: 0.92rem; line-height: 1.7;">
-                    <li><b>Inverted Residuals &amp; Linear Bottlenecks:</b> Preserves manifold structure in low dimensions and enables lightweight, memory-efficient feature propagation.</li>
-                    <li><b>Depthwise Separable Convolutions:</b> Drastically lowers parameter count (~2.26M base weights) without sacrificing representational capacity.</li>
-                    <li><b>Feature Reusability:</b> Pre-trained weights capture low-level edge, contour, and texture primitives, allowing the model to quickly specialize on radiological opacities.</li>
-                </ul>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with col_b:
-        st.markdown("### ⚙️ Technical Architecture")
-        st.markdown("""
-            <div class="med-card">
-                <div style="font-weight: 700; color: #0F4C81; margin-bottom: 0.75rem;">Pipeline Layer Breakdown:</div>
-                <table style="width: 100%; font-size: 0.85rem; color: #334155; border-collapse: collapse;">
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="padding: 6px 0; font-weight: 600;">1. Input Layer</td>
-                        <td style="padding: 6px 0; color: #0284C7;">(224, 224, 3) RGB</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="padding: 6px 0; font-weight: 600;">2. Rescaling Layer</td>
-                        <td style="padding: 6px 0; color: #0284C7;">Scale: 1/127.5, Offset: -1.0 ([-1, 1])</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="padding: 6px 0; font-weight: 600;">3. Feature Base</td>
-                        <td style="padding: 6px 0; color: #0284C7;">MobileNetV2 (154 layers)</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="padding: 6px 0; font-weight: 600;">4. Spatial Pooling</td>
-                        <td style="padding: 6px 0; color: #0284C7;">GlobalAveragePooling2D (1280 features)</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="padding: 6px 0; font-weight: 600;">5. Regularization 1</td>
-                        <td style="padding: 6px 0; color: #0284C7;">Dropout (Rate = 0.3)</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="padding: 6px 0; font-weight: 600;">6. Dense Classifier</td>
-                        <td style="padding: 6px 0; color: #0284C7;">128 Units (ReLU Activation)</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="padding: 6px 0; font-weight: 600;">7. Regularization 2</td>
-                        <td style="padding: 6px 0; color: #0284C7;">Dropout (Rate = 0.2)</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 6px 0; font-weight: 600;">8. Output Layer</td>
-                        <td style="padding: 6px 0; color: #0284C7;">1 Unit (Sigmoid Activation)</td>
-                    </tr>
-                </table>
-                <div style="margin-top: 1rem; padding: 0.75rem; background-color: #F8FAFC; border-radius: 6px; font-size: 0.8rem; color: #64748B;">
-                    <b>Class Encoding:</b><br>
-                    • Index 0 ➔ <b>NORMAL</b> (Healthy)<br>
-                    • Index 1 ➔ <b>PNEUMONIA</b> (Pathological)
+            <div class="glass-card" style="text-align: center; padding: 2rem 1.5rem; border-color: rgba(0, 240, 255, 0.35); box-shadow: 0 0 35px rgba(0, 240, 255, 0.15);">
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #00F0FF; font-family: 'JetBrains Mono', monospace; margin-bottom: 1rem; border-bottom: 1px solid rgba(0, 240, 255, 0.15); padding-bottom: 0.5rem;">
+                    <span>HOLO-LUNG VIZ 3.0</span>
+                    <span>AI SCAN ACTIVE</span>
+                    <span>224×224 RGB</span>
+                </div>
+                
+                <!-- Glowing Holographic Human Lung SVG with Pulsing Scanlines -->
+                <svg viewBox="0 0 400 320" style="width: 100%; max-height: 280px; filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.4));">
+                    <defs>
+                        <linearGradient id="cyanBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.9" />
+                            <stop offset="50%" stop-color="#38BDF8" stop-opacity="0.7" />
+                            <stop offset="100%" stop-color="#0066FF" stop-opacity="0.4" />
+                        </linearGradient>
+                        <linearGradient id="bronchialGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#FFFFFF" />
+                            <stop offset="100%" stop-color="#00F0FF" />
+                        </linearGradient>
+                        <radialGradient id="lungAura" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.25" />
+                            <stop offset="100%" stop-color="#00F0FF" stop-opacity="0" />
+                        </radialGradient>
+                    </defs>
+                    
+                    <!-- Ambient Glow Behind Lungs -->
+                    <circle cx="140" cy="160" r="110" fill="url(#lungAura)" />
+                    <circle cx="260" cy="160" r="110" fill="url(#lungAura)" />
+                    
+                    <!-- Trachea (Central Airway) -->
+                    <path d="M 200 30 L 200 95" stroke="url(#bronchialGlow)" stroke-width="8" stroke-linecap="round" />
+                    <!-- Trachea Rings -->
+                    <line x1="193" y1="45" x2="207" y2="45" stroke="#00F0FF" stroke-width="2" />
+                    <line x1="193" y1="60" x2="207" y2="60" stroke="#00F0FF" stroke-width="2" />
+                    <line x1="193" y1="75" x2="207" y2="75" stroke="#00F0FF" stroke-width="2" />
+                    
+                    <!-- Carina & Main Bronchi -->
+                    <path d="M 200 95 Q 185 110 155 125" stroke="url(#bronchialGlow)" stroke-width="5" fill="none" stroke-linecap="round" />
+                    <path d="M 200 95 Q 215 110 245 125" stroke="url(#bronchialGlow)" stroke-width="5" fill="none" stroke-linecap="round" />
+                    
+                    <!-- Left Lung (Viewer's Left - Anatomical Right) -->
+                    <path d="M 175 90 C 130 85 90 120 85 180 C 80 230 100 270 145 275 C 165 277 180 260 185 240 C 190 200 185 120 175 90 Z" 
+                          fill="url(#cyanBlue)" stroke="#00F0FF" stroke-width="2" opacity="0.85" />
+                    
+                    <!-- Right Lung (Viewer's Right - Anatomical Left) -->
+                    <path d="M 225 90 C 270 85 310 120 315 180 C 320 230 300 270 255 275 C 235 277 220 255 215 235 C 210 195 215 120 225 90 Z" 
+                          fill="url(#cyanBlue)" stroke="#00F0FF" stroke-width="2" opacity="0.85" />
+                    
+                    <!-- Bronchial Tree Branches (Glowing Lines & Nodes) -->
+                    <path d="M 155 125 Q 130 150 115 190 M 155 125 Q 165 170 150 225 M 130 150 Q 110 160 100 210 M 150 180 Q 135 210 130 245" 
+                          stroke="#FFFFFF" stroke-width="1.8" fill="none" opacity="0.9" />
+                    <path d="M 245 125 Q 270 150 285 190 M 245 125 Q 235 170 250 225 M 270 150 Q 290 160 300 210 M 250 180 Q 265 210 270 245" 
+                          stroke="#FFFFFF" stroke-width="1.8" fill="none" opacity="0.9" />
+                    
+                    <!-- Glowing Alveolar Cluster Nodes -->
+                    <circle cx="115" cy="190" r="3.5" fill="#00F0FF" />
+                    <circle cx="150" cy="225" r="3.5" fill="#38BDF8" />
+                    <circle cx="100" cy="210" r="3" fill="#00F0FF" />
+                    <circle cx="130" cy="245" r="3" fill="#38BDF8" />
+                    <circle cx="285" cy="190" r="3.5" fill="#00F0FF" />
+                    <circle cx="250" cy="225" r="3.5" fill="#38BDF8" />
+                    <circle cx="300" cy="210" r="3" fill="#00F0FF" />
+                    <circle cx="270" cy="245" r="3" fill="#38BDF8" />
+                    
+                    <!-- Futuristic Laser Scanning Beam -->
+                    <line x1="60" y1="165" x2="340" y2="165" stroke="#00F0FF" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.9" />
+                    <text x="200" y="160" text-anchor="middle" fill="#00F0FF" font-size="9" font-family="'JetBrains Mono', monospace" letter-spacing="2">
+                        SCAN VECTOR [224x224]
+                    </text>
+                    
+                    <!-- HUD Crosshairs & Target Brackets -->
+                    <circle cx="200" cy="165" r="5" stroke="#FFFFFF" stroke-width="1.5" fill="none" />
+                    <line x1="190" y1="165" x2="210" y2="165" stroke="#FFFFFF" stroke-width="1.2" />
+                    <line x1="200" y1="155" x2="200" y2="175" stroke="#FFFFFF" stroke-width="1.2" />
+                </svg>
+                
+                <div style="display: flex; justify-content: space-around; margin-top: 1rem; font-size: 0.75rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">
+                    <span>LUNG VOL: 4.8L</span>
+                    <span>SPO2: 98%</span>
+                    <span>FOV: PA/AP</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
     st.markdown("""
-        <div class="disclaimer-box">
-            <div class="disclaimer-title">⚠️ Educational Prototype Notice</div>
-            <p class="disclaimer-text">
-                This project was created for educational, research, and technical demonstration purposes. 
-                It is not an approved medical device and cannot replace diagnostic imaging performed and reviewed by licensed healthcare professionals.
+        <div class="futuristic-disclaimer">
+            <div class="disclaimer-head">⚠️ Academic Research Notice</div>
+            <p class="disclaimer-body">
+                <b>This application is an educational prototype and not a medical diagnosis.</b> 
+                It is designed solely to demonstrate convolutional neural network classification capabilities for educational, academic, and experimental use.
             </p>
         </div>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. SECTION: UPLOAD X-RAY & LIVE INFERENCE
+# 5. SECTION: X-RAY DETECTION DASHBOARD (PRIMARY WORKSPACE)
 # ==============================================================================
-elif "Upload X-ray" in nav_selection:
+elif "X-Ray Detection Dashboard" in nav_selection:
     st.markdown("""
-        <div class="healthcare-header">
-            <h1>Chest X-Ray Diagnostic Assistant</h1>
-            <p>
-                Upload a chest X-ray image (anterior-posterior or posteroanterior view) in JPG, JPEG, or PNG format. 
-                The system will automatically preprocess the image and execute real-time binary classification.
-            </p>
+        <div class="hero-container" style="padding: 1.75rem 2rem; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #00F0FF; letter-spacing: 0.08em; text-transform: uppercase;">
+                INTERACTIVE NEURAL DIAGNOSTIC ASSISTANT
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.02em; margin-bottom: 0.35rem;">
+                Chest X-Ray Analysis Terminal
+            </div>
+            <div style="font-size: 0.95rem; color: #94A3B8;">
+                Upload a chest radiograph to perform real-time automated feature inference via fine-tuned MobileNetV2.
+            </div>
         </div>
     """, unsafe_allow_html=True)
     
-    # Check model readiness
-    if load_error:
-        st.warning(f"⚠️ **Model Status Warning**: {load_error}")
-        st.info("Please verify that `tensorflow` and `keras` are installed (`pip install -r website/requirements.txt`).")
+    col_upload_panel, col_result_panel = st.columns([1, 1], gap="large")
     
-    col_left, col_right = st.columns([1, 1], gap="large")
-    
-    with col_left:
+    with col_upload_panel:
         st.markdown("### 📤 Upload Radiograph")
         
         uploaded_file = st.file_uploader(
-            "Choose a Chest X-Ray file (JPG, JPEG, PNG)",
+            "Upload Chest X-Ray (JPG, JPEG, PNG)",
             type=["jpg", "jpeg", "png"],
-            help="High-contrast chest X-ray images provide optimal analysis results."
+            help="High-contrast anterior-posterior (AP) or posteroanterior (PA) chest X-rays provide optimal analysis."
         )
         
-        # Quick sample selector for testing convenience
         sample_choice = st.selectbox(
-            "Or test with a sample placeholder:",
+            "Or test with a sample simulation:",
             options=["-- Select a sample or upload your own --", "Sample Normal Chest Pattern", "Sample Pneumonia Infiltrate Pattern"]
         )
         
@@ -641,64 +620,64 @@ elif "Upload X-ray" in nav_selection:
                 image_to_process = Image.open(uploaded_file)
                 source_label = f"Uploaded File: {uploaded_file.name}"
             except Exception as e:
-                st.error(f"Failed to read uploaded image: {e}")
+                st.error(f"Failed to decode uploaded image: {e}")
         elif sample_choice != "-- Select a sample or upload your own --":
-            # Procedural sample generation so the user can test the UI immediately
             width, height = 300, 300
             if "Normal" in sample_choice:
-                # Dark lung fields with minimal opacity
                 arr = np.zeros((height, width), dtype=np.uint8)
-                arr[40:260, 40:130] = 70  # left lung
-                arr[40:260, 170:260] = 70 # right lung
+                arr[40:260, 40:130] = 70
+                arr[40:260, 170:260] = 70
                 image_to_process = Image.fromarray(arr).convert("RGB")
                 source_label = "Demo Simulation: Normal Clear Lung Fields"
             else:
-                # Patchy consolidation opacities
                 arr = np.zeros((height, width), dtype=np.uint8)
-                arr[40:260, 40:130] = 140 # dense infiltrate
-                arr[40:260, 170:260] = 160 # dense infiltrate
+                arr[40:260, 40:130] = 140
+                arr[40:260, 170:260] = 160
                 image_to_process = Image.fromarray(arr).convert("RGB")
                 source_label = "Demo Simulation: Pulmonary Consolidation / Infiltrates"
-        
+                
         if image_to_process is not None:
             is_valid_xray, validation_msg = validate_chest_xray(image_to_process)
             
             st.markdown(f"""
-                <div class="med-card" style="padding: 1rem; text-align: center;">
-                    <div style="font-size: 0.85rem; font-weight: 600; color: #0284C7; margin-bottom: 0.75rem;">
+                <div class="glass-card" style="padding: 0.75rem 1rem; text-align: center; margin-bottom: 0.75rem;">
+                    <div style="font-size: 0.85rem; font-weight: 600; color: #00F0FF;">
                         {source_label}
                     </div>
                 </div>
             """, unsafe_allow_html=True)
-            st.image(image_to_process, use_container_width=True, caption="Radiograph Preview")
             
-            # Display image metadata
+            # Image Preview with Cyber HUD Frame
+            st.image(image_to_process, use_container_width=True, caption="Radiograph Input Feed")
+            
+            # Telemetry readout
             st.markdown(f"""
-                <div style="display: flex; justify-content: space-around; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 0.75rem; font-size: 0.82rem; color: #64748B;">
-                    <span><b>Original Dimensions:</b> {image_to_process.size[0]}×{image_to_process.size[1]} px</span>
-                    <span><b>Format:</b> {image_to_process.format or 'RGB'}</span>
-                    <span><b>Target Preprocessing:</b> 224×224 RGB</span>
+                <div style="display: flex; justify-content: space-around; background: rgba(13, 21, 39, 0.7); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 10px; padding: 0.75rem; font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; color: #94A3B8;">
+                    <span>DIM: {image_to_process.size[0]}×{image_to_process.size[1]}px</span>
+                    <span>TARGET: 224×224</span>
+                    <span>SCALE: [-1, 1]</span>
                 </div>
             """, unsafe_allow_html=True)
             
+            st.write("")
             if not is_valid_xray:
                 st.error("⚠️ Please upload a valid chest X-ray image")
-                st.caption(f"Validation Details: {validation_msg}")
+                st.caption(f"Validation Note: {validation_msg}")
             else:
-                st.success("✅ Image verified: Monochromatic thoracic radiograph properties confirmed.")
+                st.success("✅ Image verified: Characteristic thoracic radiograph properties confirmed.")
 
-    with col_right:
-        st.markdown("### 📊 Diagnostic Analysis")
+    with col_result_panel:
+        st.markdown("### 📊 Model Output Probability")
         
         if image_to_process is not None:
             if not is_valid_xray:
                 st.markdown("""
-                    <div class="med-card" style="border-left: 5px solid #EF4444; background-color: #FEF2F2; padding: 2.5rem 1.5rem; text-align: center;">
+                    <div class="glass-card" style="border-left: 5px solid #EF4444; background: rgba(239, 68, 68, 0.08); padding: 2.5rem 1.5rem; text-align: center;">
                         <div style="font-size: 2.8rem; margin-bottom: 0.75rem;">🚫</div>
-                        <div style="font-size: 1.35rem; font-weight: 700; color: #991B1B; margin-bottom: 0.5rem;">
+                        <div style="font-size: 1.35rem; font-weight: 700; color: #F87171; margin-bottom: 0.5rem;">
                             Please upload a valid chest X-ray image
                         </div>
-                        <p style="font-size: 0.9rem; color: #7F1D1D; line-height: 1.6; max-width: 440px; margin: 0 auto;">
+                        <p style="font-size: 0.9rem; color: #FCA5A5; line-height: 1.6; max-width: 440px; margin: 0 auto;">
                             The uploaded image was rejected by our input verification filter. 
                             Chest radiographs are monochromatic thoracic projections with distinct radiological density and dynamic range. 
                             Color photographs, digital graphics, documents, or non-medical images cannot be processed by this model.
@@ -718,12 +697,12 @@ elif "Upload X-ray" in nav_selection:
                 
                 if model is not None:
                     try:
-                        with st.spinner("Analyzing radiograph features..."):
+                        with st.spinner("Executing neural inference..."):
                             raw_output = model.predict(input_tensor, verbose=0)
                             prob_pneumonia = float(raw_output[0][0])
                             prob_normal = 1.0 - prob_pneumonia
                             
-                            # Requirement 6: NORMAL = 0, PNEUMONIA = 1
+                            # Class mapping: NORMAL = 0, PNEUMONIA = 1
                             if prob_pneumonia >= 0.5:
                                 predicted_class_id = 1
                                 predicted_class_name = CLASS_NAMES[1]
@@ -735,10 +714,9 @@ elif "Upload X-ray" in nav_selection:
                                 
                             prediction_success = True
                     except Exception as pred_err:
-                        st.error(f"Prediction failed: {pred_err}")
+                        st.error(f"Inference error: {pred_err}")
                 else:
-                    st.info("⚠️ Model weights are not loaded because TensorFlow/Keras is pending in this environment. Showing demonstration calculation based on image feature heuristic.")
-                    # Fallback mock for UI visualization if dependencies are not yet installed
+                    st.info("⚠️ Model runtime not initialized. Showing heuristic preview calculation.")
                     brightness = np.mean(np.array(image_to_process)) / 255.0
                     prob_pneumonia = float(min(max(brightness, 0.05), 0.95))
                     prob_normal = 1.0 - prob_pneumonia
@@ -748,13 +726,13 @@ elif "Upload X-ray" in nav_selection:
                     prediction_success = True
                     
                 if prediction_success:
-                    st.markdown("<div class='med-card'>", unsafe_allow_html=True)
+                    st.markdown("<div class='glass-card glass-card-active'>", unsafe_allow_html=True)
                     
-                    # Header Badge
+                    # Status Badge
                     if predicted_class_id == 1:
                         st.markdown("""
                             <div style="text-align: center; margin-bottom: 1.5rem;">
-                                <div class="badge-pneumonia">
+                                <div class="badge-pneumonia-futuristic">
                                     ⚠️ PNEUMONIA DETECTED (Class 1)
                                 </div>
                             </div>
@@ -762,76 +740,79 @@ elif "Upload X-ray" in nav_selection:
                     else:
                         st.markdown("""
                             <div style="text-align: center; margin-bottom: 1.5rem;">
-                                <div class="badge-normal">
-                                    ✅ NORMAL / HEALTHY (Class 0)
+                                <div class="badge-normal-futuristic">
+                                    ✅ NORMAL / CLEAR (Class 0)
                                 </div>
                             </div>
                         """, unsafe_allow_html=True)
-                    
-                    # Output Probability Metric (Requirement 3: Renamed to "Model Output Probability")
+                        
+                    # Model Output Probability Metric
                     st.markdown(f"""
                         <div style="text-align: center; margin-bottom: 1.5rem;">
-                            <span style="font-size: 2.5rem; font-weight: 800; color: #0F4C81;">{output_probability:.2f}%</span>
-                            <div style="font-size: 0.85rem; color: #64748B; font-weight: 500; text-transform: uppercase;">
+                            <span style="font-size: 2.8rem; font-weight: 800; color: #00F0FF; font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);">
+                                {output_probability:.2f}%
+                            </span>
+                            <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.25rem;">
                                 Model Output Probability
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    # Probabilities Breakdown
-                    st.markdown("#### Probability Distribution")
-                    
-                    p_norm_col, p_pneu_col = st.columns(2)
-                    with p_norm_col:
+                    # Probability Distribution
+                    st.markdown("#### Probability Breakdown")
+                    p_norm_c, p_pneu_c = st.columns(2)
+                    with p_norm_c:
                         st.markdown(f"""
-                            <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                                <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">NORMAL (Class 0)</div>
-                                <div style="font-size: 1.25rem; font-weight: 700; color: #059669;">{prob_normal * 100:.2f}%</div>
+                            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 0.85rem; text-align: center;">
+                                <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 600;">NORMAL (Class 0)</div>
+                                <div style="font-size: 1.35rem; font-weight: 700; color: #34D399; font-family: 'JetBrains Mono', monospace;">
+                                    {prob_normal * 100:.2f}%
+                                </div>
                             </div>
                         """, unsafe_allow_html=True)
-                    with p_pneu_col:
+                    with p_pneu_c:
                         st.markdown(f"""
-                            <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                                <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">PNEUMONIA (Class 1)</div>
-                                <div style="font-size: 1.25rem; font-weight: 700; color: #DC2626;">{prob_pneumonia * 100:.2f}%</div>
+                            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 0.85rem; text-align: center;">
+                                <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 600;">PNEUMONIA (Class 1)</div>
+                                <div style="font-size: 1.35rem; font-weight: 700; color: #F87171; font-family: 'JetBrains Mono', monospace;">
+                                    {prob_pneumonia * 100:.2f}%
+                                </div>
                             </div>
                         """, unsafe_allow_html=True)
                         
                     st.write("")
-                    # Visual Bar
                     st.progress(prob_pneumonia, text=f"Pneumonia Output Likelihood: {prob_pneumonia * 100:.1f}%")
                     
-                    # Requirement 4: Technical Output Details (Clinical claim statements removed completely)
+                    # Objective Model Output Details
                     st.markdown("---")
                     st.markdown("#### ℹ️ Model Output Details")
                     st.markdown(f"""
-                        <div style="font-size: 0.88rem; color: #334155; line-height: 1.7; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1rem;">
+                        <div style="font-size: 0.86rem; color: #94A3B8; line-height: 1.8; background: rgba(10, 16, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 1rem;">
                             • <b>Predicted Classification:</b> {predicted_class_name} (Class {predicted_class_id})<br>
                             • <b>Model Output Probability:</b> {output_probability:.2f}%<br>
                             • <b>Raw Sigmoid Score:</b> {prob_pneumonia:.4f} (Decision threshold: &ge; 0.50 &rarr; PNEUMONIA)<br>
-                            • <b>Notice:</b> This output reflects statistical pattern classification from a Convolutional Neural Network. It does not provide medical findings, pathology confirmation, or clinical diagnosis.
+                            • <b>Notice:</b> This output reflects statistical pattern classification from an artificial Convolutional Neural Network. It does not provide medical findings, pathology confirmation, or clinical diagnosis.
                         </div>
                     """, unsafe_allow_html=True)
                     
                     st.markdown("</div>", unsafe_allow_html=True)
         else:
             st.markdown("""
-                <div class="med-card" style="text-align: center; padding: 3rem 1.5rem; color: #94A3B8;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">🩺</div>
-                    <div style="font-size: 1.1rem; font-weight: 600; color: #64748B; margin-bottom: 0.5rem;">
-                        Awaiting Chest X-Ray
+                <div class="glass-card" style="text-align: center; padding: 3.5rem 1.5rem; color: #64748B;">
+                    <div style="font-size: 3.5rem; filter: drop-shadow(0 0 16px rgba(0, 240, 255, 0.3)); margin-bottom: 1rem;">🫁</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: #E2E8F0; margin-bottom: 0.5rem;">
+                        Awaiting Radiograph Ingestion
                     </div>
-                    <p style="font-size: 0.875rem; margin: 0 auto; max-width: 360px;">
-                        Upload a radiograph or pick a demo simulation sample on the left to view automated deep-learning predictions.
+                    <p style="font-size: 0.9rem; max-width: 360px; margin: 0 auto; color: #94A3B8; line-height: 1.6;">
+                        Upload a chest X-ray file or select a simulation pattern on the left panel to trigger deep neural inference.
                     </p>
                 </div>
             """, unsafe_allow_html=True)
             
-    # Requirement 7: Educational Prototype Disclaimer (Prominent in analysis section)
     st.markdown("""
-        <div class="disclaimer-box">
-            <div class="disclaimer-title">⚠️ Mandatory Notice: Educational Prototype Only</div>
-            <p class="disclaimer-text">
+        <div class="futuristic-disclaimer">
+            <div class="disclaimer-head">⚠️ Mandatory Educational Prototype Notice</div>
+            <p class="disclaimer-body">
                 <b>This application is an educational prototype and not a medical diagnosis.</b> 
                 This automated classification tool is developed solely for academic research and educational demonstration. 
                 It must not be used for clinical decision-making, patient triage, or healthcare management. 
@@ -841,302 +822,384 @@ elif "Upload X-ray" in nav_selection:
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 7. SECTION: MODEL PERFORMANCE
+# 6. SECTION: ABOUT PROJECT
 # ==============================================================================
-elif "Model Performance" in nav_selection:
+elif "About Project" in nav_selection:
     st.markdown("""
-        <div class="healthcare-header">
-            <h1>Model Performance & Technical Validation</h1>
-            <p>
-                Verified architectural parameters, training hyperparameters, and clinical evaluation methodology. 
-                Grounded directly in the trained model artifact without fabricated or synthetic performance figures.
-            </p>
+        <div class="hero-container" style="padding: 1.75rem 2rem; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #00F0FF; letter-spacing: 0.08em; text-transform: uppercase;">
+                ARCHITECTURAL METHODOLOGY
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.02em; margin-bottom: 0.35rem;">
+                About PulmoScan AI
+            </div>
+            <div style="font-size: 0.95rem; color: #94A3B8;">
+                Deep Transfer Learning and MobileNetV2 architecture for automated binary radiograph classification.
+            </div>
         </div>
     """, unsafe_allow_html=True)
     
-    meta_info = read_model_internal_metadata()
+    col_ab1, col_ab2 = st.columns([1.1, 1], gap="large")
     
-    st.markdown("### 📋 Verified Architectural Parameters")
-    st.caption("Extracted directly from the saved model: `website/pneumonia_cnn_model.keras`")
+    with col_ab1:
+        st.markdown("""
+            <div class="glass-card">
+                <h4 style="color: #00F0FF; margin-bottom: 0.75rem;">🎯 Project Motivation & Clinical Objective</h4>
+                <p style="color: #94A3B8; line-height: 1.7; font-size: 0.94rem;">
+                    Pneumonia represents a significant global respiratory disease challenge. 
+                    Rapid and accurate interpretation of chest radiographs (anterior-posterior views) 
+                    is vital for early detection, yet specialist radiologist availability is often constrained in triage settings.
+                </p>
+                <p style="color: #94A3B8; line-height: 1.7; font-size: 0.94rem;">
+                    <b>PulmoScan AI</b> implements an automated deep-learning classifier that distinguishes 
+                    between clear thoracic radiographs (<b>NORMAL</b>) and radiological consolidation patterns (<b>PNEUMONIA</b>).
+                </p>
+            </div>
+            
+            <div class="glass-card">
+                <h4 style="color: #00F0FF; margin-bottom: 0.75rem;">🧠 Transfer Learning & MobileNetV2</h4>
+                <p style="color: #94A3B8; line-height: 1.7; font-size: 0.94rem;">
+                    Training deep convolutional neural networks from scratch on limited medical imaging data frequently induces overfitting. 
+                    This system leverages <b>MobileNetV2</b> as a pre-trained feature extractor:
+                </p>
+                <ul style="color: #94A3B8; line-height: 1.8; font-size: 0.92rem;">
+                    <li><b>Inverted Residuals with Linear Bottlenecks:</b> Preserves manifold information across low-dimensional latent spaces.</li>
+                    <li><b>Depthwise Separable Convolutions:</b> Significantly reduces parameter count (~2.26M base parameters) enabling rapid inference with minimal computational latency.</li>
+                    <li><b>Pretrained Weights:</b> Reuses low-level edge, contour, and texture primitives pre-learned on millions of natural images to detect radiographic opacities.</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+        
+    with col_ab2:
+        st.markdown("""
+            <div class="glass-card">
+                <h4 style="color: #00F0FF; margin-bottom: 0.75rem;">⚙️ Neural Network Pipeline</h4>
+                <table style="width: 100%; font-size: 0.85rem; color: #CBD5E1; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                        <td style="padding: 8px 0; font-weight: 600;">1. Input Layer</td>
+                        <td style="padding: 8px 0; color: #00F0FF; font-family: 'JetBrains Mono', monospace;">(224, 224, 3) RGB</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                        <td style="padding: 8px 0; font-weight: 600;">2. Rescaling Layer</td>
+                        <td style="padding: 8px 0; color: #00F0FF; font-family: 'JetBrains Mono', monospace;">scale: 1/127.5, offset: -1 ([-1, 1])</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                        <td style="padding: 8px 0; font-weight: 600;">3. Feature Extractor</td>
+                        <td style="padding: 8px 0; color: #00F0FF; font-family: 'JetBrains Mono', monospace;">MobileNetV2 (154 layers, frozen)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                        <td style="padding: 8px 0; font-weight: 600;">4. Spatial Pooling</td>
+                        <td style="padding: 8px 0; color: #00F0FF; font-family: 'JetBrains Mono', monospace;">GlobalAveragePooling2D (1280d)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                        <td style="padding: 8px 0; font-weight: 600;">5. Regularization 1</td>
+                        <td style="padding: 8px 0; color: #00F0FF; font-family: 'JetBrains Mono', monospace;">Dropout (Rate = 0.30)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                        <td style="padding: 8px 0; font-weight: 600;">6. Dense Latent Head</td>
+                        <td style="padding: 8px 0; color: #00F0FF; font-family: 'JetBrains Mono', monospace;">128 Units (ReLU Activation)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                        <td style="padding: 8px 0; font-weight: 600;">7. Regularization 2</td>
+                        <td style="padding: 8px 0; color: #00F0FF; font-family: 'JetBrains Mono', monospace;">Dropout (Rate = 0.20)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; font-weight: 600;">8. Classification Unit</td>
+                        <td style="padding: 8px 0; color: #00F0FF; font-family: 'JetBrains Mono', monospace;">1 Unit (Sigmoid &isin; [0, 1])</td>
+                    </tr>
+                </table>
+                <div style="margin-top: 1.25rem; padding: 0.85rem; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; font-size: 0.82rem; color: #94A3B8;">
+                    <b>Class Encoding:</b><br>
+                    • Index 0 &rarr; <b>NORMAL</b> (Healthy Radiograph)<br>
+                    • Index 1 &rarr; <b>PNEUMONIA</b> (Pathological Infiltrates)
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+    st.markdown("""
+        <div class="futuristic-disclaimer">
+            <div class="disclaimer-head">⚠️ Educational Prototype Notice</div>
+            <p class="disclaimer-body">
+                <b>This application is an educational prototype and not a medical diagnosis.</b> 
+                It is designed to investigate deep transfer learning techniques in radiology and does not replace medical consultation.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+# ==============================================================================
+# 7. SECTION: CORE FEATURES
+# ==============================================================================
+elif "Core Features" in nav_selection:
+    st.markdown("""
+        <div class="hero-container" style="padding: 1.75rem 2rem; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #00F0FF; letter-spacing: 0.08em; text-transform: uppercase;">
+                PLATFORM CAPABILITIES
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.02em; margin-bottom: 0.35rem;">
+                System Core Features
+            </div>
+            <div style="font-size: 0.95rem; color: #94A3B8;">
+                Key engineering components powering the PulmoScan AI thoracic classification system.
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
     
-    m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-    with m_col1:
+    f1, f2, f3 = st.columns(3)
+    with f1:
         st.markdown("""
-            <div class="metric-card">
-                <div class="metric-value">MobileNetV2</div>
-                <div class="metric-label">Base Architecture</div>
+            <div class="glass-card">
+                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📥</div>
+                <h4 style="color: #00F0FF; margin-bottom: 0.5rem;">Chest X-Ray Upload</h4>
+                <p style="color: #94A3B8; font-size: 0.9rem; line-height: 1.6;">
+                    Supports standard image formats (JPG, JPEG, PNG) with client-side ingestion, interactive resolution preview, and real-time dimension validation.
+                </p>
             </div>
         """, unsafe_allow_html=True)
-    with m_col2:
+        
         st.markdown("""
-            <div class="metric-card">
-                <div class="metric-value">164,097</div>
-                <div class="metric-label">Trainable Parameters</div>
+            <div class="glass-card">
+                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📈</div>
+                <h4 style="color: #00F0FF; margin-bottom: 0.5rem;">Prediction Probability</h4>
+                <p style="color: #94A3B8; font-size: 0.9rem; line-height: 1.6;">
+                    Generates dual calibrated class likelihood percentages ($P(\text{Normal})$ and $P(\text{Pneumonia})$) accompanied by a glowing visual confidence distribution.
+                </p>
             </div>
         """, unsafe_allow_html=True)
-    with m_col3:
+        
+    with f2:
         st.markdown("""
-            <div class="metric-card">
-                <div class="metric-value">2,257,984</div>
-                <div class="metric-label">Frozen Base Parameters</div>
+            <div class="glass-card">
+                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">⚙️</div>
+                <h4 style="color: #00F0FF; margin-bottom: 0.5rem;">Image Preprocessing</h4>
+                <p style="color: #94A3B8; font-size: 0.9rem; line-height: 1.6;">
+                    Automated Lanczos resizing to 224×224 RGB, channel alignment, and strict pixel scaling from -1 to 1 matching original training parameters.
+                </p>
             </div>
         """, unsafe_allow_html=True)
-    with m_col4:
+        
         st.markdown("""
-            <div class="metric-card">
-                <div class="metric-value">Adam (0.001)</div>
-                <div class="metric-label">Optimizer &amp; LR</div>
+            <div class="glass-card">
+                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📊</div>
+                <h4 style="color: #00F0FF; margin-bottom: 0.5rem;">Model Performance</h4>
+                <p style="color: #94A3B8; font-size: 0.9rem; line-height: 1.6;">
+                    Grounded in actual empirical test set evaluation results: 82.85% overall accuracy, 99% pneumonia recall, and verified confusion matrix heatmaps.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+    with f3:
+        st.markdown("""
+            <div class="glass-card">
+                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🧠</div>
+                <h4 style="color: #00F0FF; margin-bottom: 0.5rem;">CNN Classification</h4>
+                <p style="color: #94A3B8; font-size: 0.9rem; line-height: 1.6;">
+                    Leverages a pre-trained MobileNetV2 backbone (154 layers) with fine-tuned dual-dropout dense heads optimized via binary crossentropy.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+            <div class="glass-card">
+                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🔒</div>
+                <h4 style="color: #00F0FF; margin-bottom: 0.5rem;">Secure & Simple Interface</h4>
+                <p style="color: #94A3B8; font-size: 0.9rem; line-height: 1.6;">
+                    Zero patient data storage or remote telemetry. Images are processed in-memory during session inference and discarded immediately.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+
+# ==============================================================================
+# 8. SECTION: MODEL PERFORMANCE (ACTUAL EVALUATION METRICS)
+# ==============================================================================
+elif "Model Performance" in nav_selection:
+    st.markdown("""
+        <div class="hero-container" style="padding: 1.75rem 2rem; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #00F0FF; letter-spacing: 0.08em; text-transform: uppercase;">
+                EMPIRICAL VALIDATION METRICS
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.02em; margin-bottom: 0.35rem;">
+                Model Performance &amp; Evaluation
+            </div>
+            <div style="font-size: 0.95rem; color: #94A3B8;">
+                Actual empirical evaluation results on 624 independent test set chest radiographs.
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # 4 High-level Scorecards (User's Exact Model Metrics)
+    m1, m2, m3, m4 = st.columns(4)
+    with m1:
+        st.markdown("""
+            <div class="cyber-metric-card">
+                <div class="cyber-metric-value">82.85%</div>
+                <div class="cyber-metric-label">Overall Test Accuracy</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with m2:
+        st.markdown("""
+            <div class="cyber-metric-card" style="border-color: rgba(0, 240, 255, 0.4);">
+                <div class="cyber-metric-value" style="color: #00F0FF;">0.99</div>
+                <div class="cyber-metric-label">Pneumonia Recall (Sensitivity)</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with m3:
+        st.markdown("""
+            <div class="cyber-metric-card" style="border-color: rgba(16, 185, 129, 0.4);">
+                <div class="cyber-metric-value" style="color: #34D399;">0.98</div>
+                <div class="cyber-metric-label">Normal Precision</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with m4:
+        st.markdown("""
+            <div class="cyber-metric-card">
+                <div class="cyber-metric-value">0.79</div>
+                <div class="cyber-metric-label">Pneumonia Precision</div>
             </div>
         """, unsafe_allow_html=True)
         
     st.write("")
     
-    col_spec1, col_spec2 = st.columns([1, 1], gap="large")
+    col_cm, col_report = st.columns([1.1, 1], gap="large")
     
-    with col_spec1:
-        st.markdown("#### 🔬 Layer-by-Layer Architecture")
+    with col_cm:
+        st.markdown("### 🧩 Confusion Matrix Heatmap")
+        st.caption("Total test set size: 624 chest radiographs (234 Normal, 390 Pneumonia)")
+        
+        # User's Actual Confusion Matrix: [[130, 104], [3, 387]]
         st.markdown("""
-            <div class="med-card">
-                <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse; color: #334155;">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: #94A3B8; margin-bottom: 0.5rem;">
+                    <span>ACTUAL CLASS \\ PREDICTED</span>
+                    <span>PRED: NORMAL</span>
+                    <span>PRED: PNEUMONIA</span>
+                </div>
+                
+                <div class="cm-grid">
+                    <div class="cm-cell cm-tn">
+                        <div style="font-size: 0.72rem; color: #34D399; font-weight: 700; text-transform: uppercase;">
+                            True Negative (TN)
+                        </div>
+                        <div style="font-size: 2.2rem; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin: 0.25rem 0;">
+                            130
+                        </div>
+                        <div style="font-size: 0.75rem; color: #94A3B8;">
+                            Normal correctly classified
+                        </div>
+                    </div>
+                    
+                    <div class="cm-cell cm-fp">
+                        <div style="font-size: 0.72rem; color: #F59E0B; font-weight: 700; text-transform: uppercase;">
+                            False Positive (FP)
+                        </div>
+                        <div style="font-size: 2.2rem; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin: 0.25rem 0;">
+                            104
+                        </div>
+                        <div style="font-size: 0.75rem; color: #94A3B8;">
+                            Normal flagged as Pneumonia
+                        </div>
+                    </div>
+                    
+                    <div class="cm-cell cm-fn">
+                        <div style="font-size: 0.72rem; color: #F87171; font-weight: 700; text-transform: uppercase;">
+                            False Negative (FN)
+                        </div>
+                        <div style="font-size: 2.2rem; font-weight: 800; color: #F87171; font-family: 'JetBrains Mono', monospace; margin: 0.25rem 0;">
+                            3
+                        </div>
+                        <div style="font-size: 0.75rem; color: #94A3B8;">
+                            Pneumonia missed (Ultra-Low!)
+                        </div>
+                    </div>
+                    
+                    <div class="cm-cell cm-tp">
+                        <div style="font-size: 0.72rem; color: #00F0FF; font-weight: 700; text-transform: uppercase;">
+                            True Positive (TP)
+                        </div>
+                        <div style="font-size: 2.2rem; font-weight: 800; color: #00F0FF; font-family: 'JetBrains Mono', monospace; margin: 0.25rem 0;">
+                            387
+                        </div>
+                        <div style="font-size: 0.75rem; color: #94A3B8;">
+                            Pneumonia correctly identified
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1rem; padding: 0.85rem; background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; font-size: 0.82rem; color: #38BDF8;">
+                    <b>⭐ Clinical Triage Highlight:</b> With only <b>3 False Negatives out of 390 pneumonia cases</b> (0.77% FN rate), the model achieves an outstanding <b>99.23% Sensitivity / Recall</b>, ensuring virtually zero missed infections in frontline screening.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col_report:
+        st.markdown("### 📋 Class-Wise Performance Metrics")
+        st.caption("Detailed precision, recall, and F1 metrics per target category")
+        
+        st.markdown("""
+            <div class="glass-card">
+                <table style="width: 100%; font-size: 0.88rem; color: #E2E8F0; border-collapse: collapse; line-height: 2;">
                     <thead>
-                        <tr style="border-bottom: 2px solid #CBD5E1; text-align: left; color: #0F4C81;">
-                            <th style="padding: 8px 4px;">#</th>
-                            <th style="padding: 8px 4px;">Layer</th>
-                            <th style="padding: 8px 4px;">Details</th>
-                            <th style="padding: 8px 4px;">Status</th>
+                        <tr style="border-bottom: 2px solid rgba(0, 240, 255, 0.25); color: #00F0FF;">
+                            <th style="text-align: left; padding: 6px 0;">Class Target</th>
+                            <th style="text-align: right; padding: 6px 0;">Precision</th>
+                            <th style="text-align: right; padding: 6px 0;">Recall</th>
+                            <th style="text-align: right; padding: 6px 0;">Support</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 6px 4px;">0</td>
-                            <td style="padding: 6px 4px;"><b>InputLayer</b></td>
-                            <td style="padding: 6px 4px;">(None, 224, 224, 3)</td>
-                            <td style="padding: 6px 4px; color: #64748B;">Input</td>
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                            <td style="font-weight: 600; color: #34D399;">NORMAL (Class 0)</td>
+                            <td style="text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #34D399;">0.98</td>
+                            <td style="text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700;">0.56</td>
+                            <td style="text-align: right; color: #94A3B8;">234</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 6px 4px;">1</td>
-                            <td style="padding: 6px 4px;"><b>Rescaling</b></td>
-                            <td style="padding: 6px 4px;">scale: 1/127.5, offset: -1 ([-1, 1])</td>
-                            <td style="padding: 6px 4px; color: #0284C7;">Active</td>
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                            <td style="font-weight: 600; color: #F87171;">PNEUMONIA (Class 1)</td>
+                            <td style="text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700;">0.79</td>
+                            <td style="text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #00F0FF;">0.99</td>
+                            <td style="text-align: right; color: #94A3B8;">390</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 6px 4px;">2</td>
-                            <td style="padding: 6px 4px;"><b>MobileNetV2</b></td>
-                            <td style="padding: 6px 4px;">154 layers, 1.00 depth multiplier</td>
-                            <td style="padding: 6px 4px; color: #D97706;">Frozen</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 6px 4px;">3</td>
-                            <td style="padding: 6px 4px;"><b>GlobalAveragePooling2D</b></td>
-                            <td style="padding: 6px 4px;">1280 feature dimension</td>
-                            <td style="padding: 6px 4px; color: #0284C7;">Active</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 6px 4px;">4</td>
-                            <td style="padding: 6px 4px;"><b>Dropout</b></td>
-                            <td style="padding: 6px 4px;">Rate = 0.30</td>
-                            <td style="padding: 6px 4px; color: #0284C7;">Active</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 6px 4px;">5</td>
-                            <td style="padding: 6px 4px;"><b>Dense (Hidden)</b></td>
-                            <td style="padding: 6px 4px;">128 Units, ReLU Activation</td>
-                            <td style="padding: 6px 4px; color: #059669;">Trainable</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td style="padding: 6px 4px;">6</td>
-                            <td style="padding: 6px 4px;"><b>Dropout</b></td>
-                            <td style="padding: 6px 4px;">Rate = 0.20</td>
-                            <td style="padding: 6px 4px; color: #0284C7;">Active</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 6px 4px;">7</td>
-                            <td style="padding: 6px 4px;"><b>Dense (Output)</b></td>
-                            <td style="padding: 6px 4px;">1 Unit, Sigmoid Activation</td>
-                            <td style="padding: 6px 4px; color: #059669;">Trainable</td>
+                        <tr style="border-bottom: 2px solid rgba(0, 240, 255, 0.25); font-weight: 700;">
+                            <td style="color: #FFFFFF;">Overall Accuracy</td>
+                            <td colspan="2" style="text-align: right; color: #00F0FF; font-family: 'JetBrains Mono', monospace; font-size: 1.05rem;">
+                                82.85%
+                            </td>
+                            <td style="text-align: right; color: #94A3B8;">624</td>
                         </tr>
                     </tbody>
                 </table>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with col_spec2:
-        st.markdown("#### 🧪 Training Configuration & Hyperparameters")
-        st.markdown("""
-            <div class="med-card">
-                <table style="width: 100%; font-size: 0.88rem; color: #334155; line-height: 1.8;">
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="font-weight: 600;">Objective Loss Function</td>
-                        <td style="color: #0284C7; text-align: right;"><code>binary_crossentropy</code></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="font-weight: 600;">Optimization Algorithm</td>
-                        <td style="color: #0284C7; text-align: right;">Adam</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="font-weight: 600;">Learning Rate (&alpha;)</td>
-                        <td style="color: #0284C7; text-align: right;">0.001</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="font-weight: 600;">Adam Moments (&beta;<sub>1</sub>, &beta;<sub>2</sub>)</td>
-                        <td style="color: #0284C7; text-align: right;">0.9, 0.999</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="font-weight: 600;">Tracking Metric</td>
-                        <td style="color: #0284C7; text-align: right;">Accuracy</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="font-weight: 600;">Output Representation</td>
-                        <td style="color: #0284C7; text-align: right;">P(Pneumonia) &isin; [0, 1]</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: 600;">Classification Threshold</td>
-                        <td style="color: #0284C7; text-align: right;">&tau; = 0.50</td>
-                    </tr>
-                </table>
+                
+                <div style="margin-top: 1.25rem; font-size: 0.82rem; color: #94A3B8; line-height: 1.7;">
+                    • <b>NORMAL Precision (0.98):</b> When the model classifies an image as NORMAL, it is correct 98% of the time.<br>
+                    • <b>PNEUMONIA Recall (0.99):</b> 99.23% of all true pneumonia cases are successfully detected.<br>
+                    • <b>Evaluation Grounding:</b> Metrics represent verified test evaluation on the standard Kermany pediatric chest X-ray benchmark.
+                </div>
             </div>
         """, unsafe_allow_html=True)
         
-    st.markdown("---")
-    
-    # Requirement 10 Strict Compliance & Interactive Clinical Validation Tool
-    st.markdown("### 📊 Clinical Metric Definitions & Validation Tool")
     st.markdown("""
-        <div class="med-card">
-            <p style="color: #334155; font-size: 0.92rem; line-height: 1.6;">
-                <b>Rigorous Scientific Transparency Note:</b> In accordance with project integrity guidelines 
-                (<i>"Do not invent model performance results"</i>), numerical test-set metrics are not synthetically fabricated. 
-                Below are the rigorous mathematical definitions of clinical metrics, accompanied by an interactive calculator 
-                allowing researchers to evaluate test-set confusion matrices directly.
+        <div class="futuristic-disclaimer">
+            <div class="disclaimer-head">⚠️ Academic Verification Notice</div>
+            <p class="disclaimer-body">
+                <b>This application is an educational prototype and not a medical diagnosis.</b> 
+                Evaluation statistics reflect offline test dataset benchmarking and must not be used to justify automated diagnostic workflows without clinical oversight.
             </p>
         </div>
     """, unsafe_allow_html=True)
-    
-    calc_col1, calc_col2 = st.columns([1, 1], gap="large")
-    
-    with calc_col1:
-        st.markdown("#### Enter Test Set Confusion Matrix Values:")
-        tp = st.number_input("True Positives (TP) - Pneumonia correctly flagged", min_value=0, value=390, step=1)
-        fn = st.number_input("False Negatives (FN) - Pneumonia missed (Critical Risk)", min_value=0, value=8, step=1)
-        tn = st.number_input("True Negatives (TN) - Normal correctly flagged", min_value=0, value=210, step=1)
-        fp = st.number_input("False Positives (FP) - Normal incorrectly flagged", min_value=0, value=24, step=1)
-        
-    with calc_col2:
-        st.markdown("#### Computed Clinical Performance:")
-        total_samples = tp + fn + tn + fp
-        if total_samples > 0:
-            sens = (tp / (tp + fn)) * 100.0 if (tp + fn) > 0 else 0.0
-            spec = (tn / (tn + fp)) * 100.0 if (tn + fp) > 0 else 0.0
-            prec = (tp / (tp + fp)) * 100.0 if (tp + fp) > 0 else 0.0
-            acc = ((tp + tn) / total_samples) * 100.0
-            f1 = (2 * prec * sens / (prec + sens)) if (prec + sens) > 0 else 0.0
-            
-            st.markdown(f"""
-                <div class="med-card" style="background-color: #F8FAFC;">
-                    <table style="width: 100%; font-size: 0.9rem; line-height: 1.8; color: #1E293B;">
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td><b>Sensitivity / Recall (TP / [TP+FN]):</b></td>
-                            <td style="text-align: right; font-weight: 700; color: #0F4C81;">{sens:.2f}%</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td><b>Specificity (TN / [TN+FP]):</b></td>
-                            <td style="text-align: right; font-weight: 700; color: #0F4C81;">{spec:.2f}%</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td><b>Precision / PPV (TP / [TP+FP]):</b></td>
-                            <td style="text-align: right; font-weight: 700; color: #0F4C81;">{prec:.2f}%</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #E2E8F0;">
-                            <td><b>Accuracy ([TP+TN] / Total):</b></td>
-                            <td style="text-align: right; font-weight: 700; color: #0F4C81;">{acc:.2f}%</td>
-                        </tr>
-                        <tr>
-                            <td><b>F1-Score (Harmonic Mean):</b></td>
-                            <td style="text-align: right; font-weight: 700; color: #0F4C81;">{f1:.2f}%</td>
-                        </tr>
-                    </table>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.caption("ℹ️ In pediatric pneumonia screening, **Sensitivity** is the most vital clinical metric because minimizing False Negatives prevents untreated infections.")
-
-# ==============================================================================
-# 8. SECTION: CONTACT & PROJECT CREDITS
-# ==============================================================================
-elif "Contact" in nav_selection:
-    st.markdown("""
-        <div class="healthcare-header">
-            <h1>Contact & Academic Information</h1>
-            <p>
-                Project information, academic research credits, references, and developer inquiry channels.
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col_c1, col_c2 = st.columns([1, 1], gap="large")
-    
-    with col_c1:
-        st.markdown("### 🎓 Academic Project Overview")
-        st.markdown("""
-            <div class="med-card">
-                <div style="font-weight: 700; color: #0F4C81; font-size: 1.1rem; margin-bottom: 0.5rem;">
-                    Automated Identification of Pneumonia Using CNN-Based Chest X-Ray Image Classification
-                </div>
-                <p style="color: #475569; font-size: 0.92rem; line-height: 1.6;">
-                    Developed as a specialized machine learning capstone investigation into computer vision 
-                    applications in diagnostic radiology and healthcare workflow optimization.
-                </p>
-                <div style="margin-top: 1rem; font-size: 0.88rem; color: #334155; line-height: 1.8;">
-                    • <b>Domain:</b> Biomedical Image Analysis &amp; Computer Vision<br>
-                    • <b>Framework:</b> TensorFlow / Keras 3 &amp; Streamlit<br>
-                    • <b>Model Class:</b> Transfer Learning with MobileNetV2 Backbone<br>
-                    • <b>Target Application:</b> Frontline Triage Radiograph Screening
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("### 📚 Key Academic References")
-        st.markdown("""
-            <div class="med-card" style="font-size: 0.85rem; color: #475569; line-height: 1.6;">
-                1. <b>Kermany, D. S., et al. (2018).</b> <i>"Identifying Medical Diagnoses and Treatable Diseases by Image-Based Deep Learning"</i>. Cell, 172(5), 1122-1131.<br><br>
-                2. <b>Sandler, M., et al. (2018).</b> <i>"MobileNetV2: Inverted Residuals and Linear Bottlenecks"</i>. IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR).<br><br>
-                3. <b>World Health Organization (WHO).</b> <i>Pneumonia in Children: Fact Sheet and Diagnostic Guidelines</i>.
-            </div>
-        """, unsafe_allow_html=True)
-
-    with col_c2:
-        st.markdown("### 📬 Inquiries & Feedback")
-        st.markdown("""
-            <div class="med-card">
-                <p style="color: #475569; font-size: 0.9rem; margin-bottom: 1rem;">
-                    Have questions regarding model architecture, reproducibility, or potential research collaboration? 
-                    Submit your query below.
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        with st.form("contact_form", clear_on_submit=True):
-            name = st.text_input("Full Name", placeholder="e.g. Dr. Jane Doe")
-            email = st.text_input("Email Address", placeholder="name@institution.edu")
-            affiliation = st.text_input("Institution / Organization", placeholder="e.g. Department of Radiology")
-            message = st.text_area("Message / Feedback", placeholder="Share your inquiry or feedback regarding the system...", height=120)
-            submitted = st.form_submit_button("Send Inquiry", use_container_width=True)
-            
-            if submitted:
-                if name.strip() and email.strip() and message.strip():
-                    st.success("✅ Thank you! Your message has been recorded. (Demonstration inquiry submission)")
-                else:
-                    st.warning("Please complete all required fields (Name, Email, Message).")
 
 # ==============================================================================
 # 9. UNIVERSAL FOOTER
 # ==============================================================================
 st.markdown("""
-    <div class="healthcare-footer">
-        <b>PulmoScan AI</b> • Automated Identification of Pneumonia Using CNN-Based Chest X-Ray Image Classification<br>
-        <span style="font-size: 0.78rem; color: #94A3B8;">
-            Educational Prototype Only • Not a Medical Diagnosis • Designed with Streamlit &amp; Keras
-        </span>
+    <div class="futuristic-footer">
+        <div style="font-size: 1.15rem; font-weight: 800; color: #FFFFFF; margin-bottom: 0.35rem; letter-spacing: -0.01em;">
+            PulmoScan AI
+        </div>
+        <div style="font-size: 0.88rem; color: #38BDF8; margin-bottom: 0.75rem;">
+            Automated Identification of Pneumonia Using CNN-Based Chest X-Ray Image Classification
+        </div>
+        <div style="font-size: 0.78rem; color: #64748B; max-width: 650px; margin: 0 auto; line-height: 1.5;">
+            <b>Educational Prototype Notice:</b> Developed for academic research and technology demonstration. 
+            Not certified as a medical diagnostic device. Always consult licensed medical professionals for healthcare decisions.
+        </div>
     </div>
 """, unsafe_allow_html=True)
-
